@@ -2,34 +2,23 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Configuration.browser;
 import static com.codeborne.selenide.Selenide.*;
 
-public class appCardDeliveryTest {
+public class AppCardDeliveryTest {
 
-    public String getDatePlus3Day() {
-        Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-        Calendar instance = Calendar.getInstance();
-        instance.setTime(date);
-        instance.add(Calendar.DATE, 3);
-        String newDate = formatter.format(instance.getTime());
-        return newDate;
+    public String getDateWithShift(int shift) {
+        return LocalDate.now().plusDays(shift).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     }
 
-    public String getWrongDate() {
-        Date date = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
-        Calendar instance = Calendar.getInstance();
-        instance.setTime(date);
-        String newDate = formatter.format(instance.getTime());
-        return newDate;
+    public static boolean x(String q, String w) {
+        return q.equalsIgnoreCase(w);
     }
 
     @BeforeEach
@@ -41,32 +30,36 @@ public class appCardDeliveryTest {
 
     @Test
     void orderingCardDelivery() {
+        String planningDate = getDateWithShift(3);
         $("[data-test-id='city'] input").setValue("Санкт-Петербург");
-        $("[placeholder='Дата встречи']").setValue(getDatePlus3Day());
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[placeholder='Дата встречи']").setValue(planningDate);
         $("[data-test-id='name'] input").setValue("Пышкин Кот");
         $("[data-test-id='phone'] input").setValue("+79522263366");
         $(".checkbox__box").click();
         $(".button").click();
         $("[data-test-id='notification'].notification_visible div.notification__content")
-                .shouldHave(exactText("Встреча успешно забронирована на " + getDatePlus3Day()));
+                .shouldHave(exactText("Встреча успешно забронирована на " + planningDate));
     }
 
     @Test
     void orderingCardDeliveryWithCompoundSurname() {
+        String planningDate = getDateWithShift(3);
         $("[data-test-id='city'] input").setValue("Санкт-Петербург");
-        $("[placeholder='Дата встречи']").setValue(getDatePlus3Day());
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[placeholder='Дата встречи']").setValue(planningDate);
         $("[data-test-id='name'] input").setValue("Капабланка-и-Граупера Олег");
         $("[data-test-id='phone'] input").setValue("+79522263366");
         $(".checkbox__box").click();
         $(".button").click();
         $("[data-test-id='notification'].notification_visible div.notification__content")
-                .shouldHave(exactText("Встреча успешно забронирована на " + getDatePlus3Day()));
+                .shouldHave(exactText("Встреча успешно забронирована на " + planningDate));
     }
 
     @Test
     void EmptyFormSendTest() {
         $("[data-test-id='city'] input").setValue("");
-        $("[placeholder='Дата встречи']").setValue("");
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE, Keys.TAB);
         $("[data-test-id='name'] input").setValue("");
         $("[data-test-id='phone'] input").setValue("");
         $(".checkbox__box").click();
@@ -78,7 +71,8 @@ public class appCardDeliveryTest {
     @Test
     void orderingCardDeliveryWithWrongCity() {
         $("[data-test-id='city'] input").setValue("Санктетербург");
-        $("[placeholder='Дата встречи']").setValue(getDatePlus3Day());
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[placeholder='Дата встречи']").setValue(getDateWithShift(3));
         $("[data-test-id='name'] input").setValue("Пышкин Кот");
         $("[data-test-id='phone'] input").setValue("+79522263366");
         $(".checkbox__box").click();
@@ -90,7 +84,8 @@ public class appCardDeliveryTest {
     @Test
     void orderingCardDeliveryWithWrongDate() {
         $("[data-test-id='city'] input").setValue("Санкт-Петербург");
-        $("[placeholder='Дата встречи']").setValue(getWrongDate());
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[placeholder='Дата встречи']").setValue(getDateWithShift(2));
         $("[data-test-id='name'] input").setValue("Пышкин Кот");
         $("[data-test-id='phone'] input").setValue("+79522263366");
         $(".checkbox__box").click();
@@ -102,7 +97,8 @@ public class appCardDeliveryTest {
     @Test
     void orderingCardDeliveryWithWrongNumber() {
         $("[data-test-id='city'] input").setValue("Санкт-Петербург");
-        $("[placeholder='Дата встречи']").setValue(getDatePlus3Day());
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[placeholder='Дата встречи']").setValue(getDateWithShift(3));
         $("[data-test-id='name'] input").setValue("Пышкин Кот");
         $("[data-test-id='phone'] input").setValue("79522263366");
         $(".checkbox__box").click();
@@ -112,41 +108,29 @@ public class appCardDeliveryTest {
     }
 
     @Test
-    void dropDownTest() {
-        $("[data-test-id='city'] input").setValue("Сан");
+    void calendarTestAndDropDownMenuTest() {
+        String planningDate = getDateWithShift(80);
+        String[] monthNames = {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"};
+        int monthIndex = Integer.parseInt(planningDate.substring(3, 5)) - 1;
+        String date = String.valueOf(Integer.parseInt(planningDate.substring(0, 2)));
+        String planningMonthYear = monthNames[monthIndex] + " " + Integer.parseInt(planningDate.substring(6, 10));
+
+        $("[data-test-id='city'] input").setValue("Са");
         $$("[tabindex].menu span.menu-item__control").findBy(text("Санкт-Петербург")).click();
-        $("[placeholder='Дата встречи']").setValue(getDatePlus3Day());
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
+        $("[role='button'].icon-button span.icon_name_calendar").click();
+        while (!x(($("[class='calendar__name']").getOwnText()), planningMonthYear)) {
+            $("[class='calendar__arrow calendar__arrow_direction_right'].calendar__arrow").click();
+        }
+        $$("[role='gridcell'].calendar__day").findBy(text(date)).click();
         $("[data-test-id='name'] input").setValue("Пышкин Кот");
         $("[data-test-id='phone'] input").setValue("+79522263366");
         $(".checkbox__box").click();
         $("[data-test-id='city'] input")
                 .shouldHave(Condition.attribute("value", "Санкт-Петербург"));
+        $(".button").click();
+        $("[data-test-id='notification'].notification_visible div.notification__content")
+                .shouldHave(exactText("Встреча успешно забронирована на " + planningDate));
     }
 
-    @Test
-    void calendarTest() {
-        String date = String.valueOf(Integer.parseInt(getDatePlus3Day().substring(0, 2)));
-        $("[data-test-id='city'] input").setValue("Санкт-Петербург");
-        $("[role='button'].icon-button span.icon_name_calendar").click();
-        $$("[role='gridcell'].calendar__day").findBy(text(date)).click();
-        $("[data-test-id='name'] input").setValue("Пышкин Кот");
-        $("[data-test-id='phone'] input").setValue("+79522263366");
-        $(".checkbox__box").click();
-        $(".button").click();
-        $(".notification_visible").shouldBe(visible);
-    }
-
-    @Test
-    void calendarTestWrongDayClick() {
-        String date = String.valueOf(Integer.parseInt(getWrongDate().substring(0, 2)));
-        $("[data-test-id='city'] input").setValue("Санкт-Петербург");
-        $("[role='button'].icon-button span.icon_name_calendar").click();
-        $$("[role='gridcell'].calendar__day").findBy(text(date)).click();
-        $("[data-test-id='name'] input").setValue("Пышкин Кот");
-        $("[data-test-id='phone'] input").setValue("+79522263366");
-        $(".checkbox__box").click();
-        $(".button").click();
-        $(".notification_visible").shouldBe(visible);
-    }
 }
-
